@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Telegram Bot Control Panel</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #1a73e8;
+      --primary-dark: #1664c1;
+      --success: #28a745;
+      --danger: #dc3545;
+      --warning: #ffc107;
+      --light: #f8f9fa;
+      --dark: #343a40;
+      --gray: #6c757d;
+      --border-radius: 12px;
+      --box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      --transition: all 0.3s ease;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      line-height: 1.6;
+      background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%);
+      color: #333;
+      padding: 20px;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 25px;
+      background: white;
+      padding: 15px 20px;
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+    }
+
+    .logo {
+      width: 50px;
+      height: 50px;
+      background: var(--primary);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 15px;
+      color: white;
+      font-size: 24px;
+    }
+
+    .header-text h1 {
+      font-size: 24px;
+      color: var(--primary);
+      margin-bottom: 2px;
+    }
+
+    .header-text p {
+      font-size: 14px;
+      color: var(--gray);
+    }
+
+    .dashboard {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    @media (max-width: 768px) {
+      .dashboard {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: white;
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+      padding: 20px;
+      transition: var(--transition);
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    }
+
+    .card h3 {
+      margin-bottom: 15px;
+      font-size: 16px;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+    }
+
+    .card h3 i {
+      margin-right: 8px;
+    }
+
+    /* Status Controls */
+    .status-card {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .status-badge {
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-weight: bold;
+      font-size: 14px;
+      margin-right: 15px;
+      min-width: 80px;
+      text-align: center;
+    }
+
+    .status-on {
+      background: var(--success);
+      color: white;
+    }
+
+    .status-off {
+      background: var(--danger);
+      color: white;
+    }
+
+    .status-connecting {
+      background: var(--warning);
+      color: var(--dark);
+    }
+
+    .controls {
+      display: flex;
+      gap: 10px;
+    }
+
+    button {
+      padding: 10px 18px;
+      border-radius: var(--border-radius);
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    button i {
+      margin-right: 6px;
+    }
+
+    .btn-on {
+      background: var(--success);
+      color: white;
+    }
+
+    .btn-on:hover {
+      background: #218838;
+      transform: translateY(-2px);
+    }
+
+    .btn-off {
+      background: var(--danger);
+      color: white;
+    }
+
+    .btn-off:hover {
+      background: #c82333;
+      transform: translateY(-2px);
+    }
+
+    /* Admin Setup */
+    .admin-input-group {
+      display: flex;
+      margin-bottom: 15px;
+    }
+
+    .admin-input-group input {
+      flex: 1;
+      padding: 10px 15px;
+      border-radius: var(--border-radius) 0 0 var(--border-radius);
+      border: 1px solid #ced4da;
+      border-right: none;
+      font-size: 14px;
+    }
+
+    .admin-input-group button {
+      border-radius: 0 var(--border-radius) var(--border-radius) 0;
+      background: var(--primary);
+      color: white;
+    }
+
+    .admin-input-group button:hover {
+      background: var(--primary-dark);
+    }
+
+    .chat-id-list {
+      list-style: none;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .chat-id-list li {
+      background: var(--light);
+      margin-bottom: 8px;
+      padding: 10px 15px;
+      border-radius: var(--border-radius);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 14px;
+      transition: var(--transition);
+    }
+
+    .chat-id-list li:hover {
+      background: #e9ecef;
+    }
+
+    .chat-id-list button {
+      background: var(--danger);
+      color: white;
+      padding: 5px 10px;
+      font-size: 12px;
+    }
+
+    .chat-id-list button:hover {
+      background: #c82333;
+    }
+
+    /* Bot Info */
+    .bot-info {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+    }
+
+    .info-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .info-item label {
+      font-size: 13px;
+      color: var(--gray);
+      margin-bottom: 5px;
+    }
+
+    .info-item span {
+      font-weight: 600;
+      font-size: 15px;
+      word-break: break-all;
+    }
+
+    /* Notifications */
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 15px 20px;
+      border-radius: var(--border-radius);
+      background: white;
+      box-shadow: var(--box-shadow);
+      display: flex;
+      align-items: center;
+      transform: translateX(150%);
+      transition: transform 0.3s ease;
+      z-index: 1000;
+    }
+
+    .notification.show {
+      transform: translateX(0);
+    }
+
+    .notification.success {
+      border-left: 4px solid var(--success);
+    }
+
+    .notification.error {
+      border-left: 4px solid var(--danger);
+    }
+
+    .notification i {
+      margin-right: 10px;
+      font-size: 20px;
+    }
+
+    .notification.success i {
+      color: var(--success);
+    }
+
+    .notification.error i {
+      color: var(--danger);
+    }
+
+    /* Loading spinner */
+    .spinner {
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(0, 0, 0, 0.1);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 1s linear infinite;
+      margin-right: 8px;
+      display: inline-block;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 30px;
+      color: var(--gray);
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo">
+        <i class="fab fa-telegram"></i>
+      </div>
+      <div class="header-text">
+        <h1>Telegram Bot Control Panel</h1>
+        <p>LOTTREY FATHER BOT LIVE</p>
+      </div>
+    </header>
+
+    <div class="dashboard">
+      <div class="card status-card">
+        <h3><i class="fas fa-power-off"></i> Bot Status</h3>
+        <div class="status-indicator">
+          <span id="status" class="status-badge status-off">OFF</span>
+          <span id="statusText">Bot is currently offline</span>
+        </div>
+        <div class="controls">
+          <button id="btn-on" class="btn-on"><i class="fas fa-play"></i> Turn ON</button>
+          <button id="btn-off" class="btn-off"><i class="fas fa-stop"></i> Turn OFF</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3><i class="fas fa-users-cog"></i> Admin Management</h3>
+        <div class="admin-input-group">
+          <input type="text" id="chatIdInput" placeholder="Enter Chat ID">
+          <button id="addChatId"><i class="fas fa-plus"></i> Add</button>
+        </div>
+        <ul id="chatIdList" class="chat-id-list"></ul>
+      </div>
+
+      <div class="card bot-info">
+        <div class="info-item">
+          <label>Bot Username</label>
+          <span>@LottreyFatherBot</span>
+        </div>
+        <div class="info-item">
+          <label>Webhook Status</label>
+          <span>Not configured</span>
+        </div>
+        <div class="info-item">
+          <label>Last Update</label>
+          <span id="lastUpdate">--</span>
+        </div>
+        <div class="info-item">
+          <label>Active Admins</label>
+          <span id="adminCount">0</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3><i class="fas fa-terminal"></i> Bot Response Log</h3>
+      <div id="logContainer" style="height: 150px; overflow-y: auto; background: #f8f9fa; padding: 10px; border-radius: 8px; font-family: monospace; font-size: 13px;">
+        <div>// Log messages will appear here...</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="notification" class="notification">
+    <i class="fas fa-check-circle"></i>
+    <span id="notification-text"></span>
+  </div>
+
+  <footer>
+    <p>Telegram Bot Control Panel &copy; 2023 | All rights reserved</p>
+  </footer>
+
+  <script>
+    const BOT_TOKEN = "8085370815:AAFc5Tl4kKBR2KTQ44grdDPtyipU6nFDzLE";
+    let botEnabled = localStorage.getItem('botEnabled') === 'true'; 
+    let pollingActive = false;
+    let lastUpdateId = 0;
+
+    // DOM Elements
+    const statusEl = document.getElementById('status');
+    const statusTextEl = document.getElementById('statusText');
+    const btnOn = document.getElementById('btn-on');
+    const btnOff = document.getElementById('btn-off');
+    const lastUpdateEl = document.getElementById('lastUpdate');
+    const logContainer = document.getElementById('logContainer');
+    const notification = document.getElementById('notification');
+    const notificationText = document.getElementById('notification-text');
+    const adminCountEl = document.getElementById('adminCount');
+
+    // Admin chat IDs management
+    let ADMIN_CHAT_IDS = JSON.parse(localStorage.getItem('ADMIN_CHAT_IDS')) || [];
+    const chatIdInput = document.getElementById('chatIdInput');
+    const addChatIdBtn = document.getElementById('addChatId');
+    const chatIdList = document.getElementById('chatIdList');
+
+    // Initialize UI
+    updateStatusUI();
+    renderChatIds();
+    updateLastUpdateTime();
+    updateAdminCount();
+
+    // Event listeners
+    btnOn.addEventListener('click', enableBot);
+    btnOff.addEventListener('click', disableBot);
+    addChatIdBtn.addEventListener('click', addChatId);
+
+    // Show notification function
+    function showNotification(message, isSuccess = true) {
+      notificationText.textContent = message;
+      notification.className = isSuccess ? 
+        'notification success show' : 'notification error show';
+      
+      setTimeout(() => {
+        notification.className = notification.className.replace(' show', '');
+      }, 3000);
+    }
+
+    // Update status UI
+    function updateStatusUI() {
+      if (botEnabled) {
+        statusEl.textContent = 'ON';
+        statusEl.className = 'status-badge status-on';
+        statusTextEl.textContent = 'Bot is running and polling for updates';
+        btnOn.disabled = true;
+        btnOff.disabled = false;
+      } else {
+        statusEl.textContent = 'OFF';
+        statusEl.className = 'status-badge status-off';
+        statusTextEl.textContent = 'Bot is currently offline';
+        btnOn.disabled = false;
+        btnOff.disabled = true;
+      }
+      
+      localStorage.setItem('botEnabled', botEnabled);
+    }
+
+    // Update admin count
+    function updateAdminCount() {
+      adminCountEl.textContent = ADMIN_CHAT_IDS.length;
+    }
+
+    // Enable bot function
+    function enableBot() {
+      botEnabled = true;
+      updateStatusUI();
+      showNotification('Bot has been enabled successfully');
+      addLog('Bot enabled manually');
+      
+      if (!pollingActive) {
+        pollUpdates();
+      }
+    }
+
+    // Disable bot function
+    function disableBot() {
+      botEnabled = false;
+      updateStatusUI();
+      showNotification('Bot has been disabled');
+      addLog('Bot disabled manually');
+    }
+
+    // Render chat IDs
+    function renderChatIds() {
+      chatIdList.innerHTML = '';
+      
+      if (ADMIN_CHAT_IDS.length === 0) {
+        const li = document.createElement('li');
+        li.textContent = 'No admin chat IDs added yet';
+        li.style.background = 'none';
+        li.style.justifyContent = 'center';
+        li.style.color = 'var(--gray)';
+        chatIdList.appendChild(li);
+        return;
+      }
+      
+      ADMIN_CHAT_IDS.forEach((id, index) => {
+        const li = document.createElement('li');
+        li.innerHTML = `
+          <span>${id}</span>
+          <button onclick="removeChatId(${index})"><i class="fas fa-trash"></i> Remove</button>
+        `;
+        chatIdList.appendChild(li);
+      });
+    }
+
+    // Save chat IDs to localStorage
+    function saveChatIds() {
+      localStorage.setItem('ADMIN_CHAT_IDS', JSON.stringify(ADMIN_CHAT_IDS));
+      updateAdminCount();
+    }
+
+    // Add chat ID
+    function addChatId() {
+      const newId = chatIdInput.value.trim();
+      
+      if (!newId) {
+        showNotification('Please enter a chat ID', false);
+        return;
+      }
+      
+      if (ADMIN_CHAT_IDS.includes(newId)) {
+        showNotification('This chat ID is already added', false);
+        return;
+      }
+      
+      ADMIN_CHAT_IDS.push(newId);
+      saveChatIds();
+      renderChatIds();
+      chatIdInput.value = '';
+      showNotification('Chat ID added successfully');
+      addLog(`Added admin chat ID: ${newId}`);
+    }
+
+    // Remove chat ID
+    function removeChatId(index) {
+      const removedId = ADMIN_CHAT_IDS[index];
+      ADMIN_CHAT_IDS.splice(index, 1);
+      saveChatIds();
+      renderChatIds();
+      showNotification('Chat ID removed successfully');
+      addLog(`Removed admin chat ID: ${removedId}`);
+    }
+
+    // Add log message
+    function addLog(message) {
+      const logEntry = document.createElement('div');
+      logEntry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+      logContainer.appendChild(logEntry);
+      logContainer.scrollTop = logContainer.scrollHeight;
+    }
+
+    // Update last update time
+    function updateLastUpdateTime() {
+      lastUpdateEl.textContent = new Date().toLocaleString();
+    }
+
+    // Send message via bot
+    async function sendMessage(chatId, text) {
+      const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+      try {
+        const response = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ chat_id: chatId, text })
+        });
+        
+        const data = await response.json();
+        
+        if (data.ok) {
+          addLog(`Message sent to ${chatId}: ${text.substring(0, 30)}...`);
+        } else {
+          addLog(`Failed to send message to ${chatId}: ${data.description}`);
+        }
+        
+        return data.ok;
+      } catch (e) {
+        console.error('sendMessage error', e);
+        addLog(`Error sending message: ${e.message}`);
+        return false;
+      }
+    }
+
+    // Poll for updates
+    async function pollUpdates() {
+      pollingActive = true;
+      let offset = lastUpdateId;
+      
+      addLog('Started polling for updates');
+      
+      while (pollingActive) {
+        try {
+          if (!botEnabled) {
+            await new Promise(r => setTimeout(r, 1000));
+            continue;
+          }
+          
+          const response = await fetch(
+            `https://api.telegram.org/bot${BOT_TOKEN}/getUpdates?offset=${offset+1}&timeout=20`
+          );
+          
+          const data = await response.json();
+          
+          if (data.ok && data.result && data.result.length > 0) {
+            for (const update of data.result) {
+              offset = update.update_id;
+              lastUpdateId = update.update_id;
+              updateLastUpdateTime();
+              
+              if (!update.message || !update.message.text) continue;
+
+              const chatId = update.message.chat.id;
+              const text = update.message.text.trim();
+              const name = update.message.from.first_name || "Unknown";
+              
+              addLog(`Received message from ${name} (${chatId}): ${text}`);
+
+              if (text === '/start') {
+                if (ADMIN_CHAT_IDS.includes(String(chatId))) {
+                  await sendMessage(chatId, `မင်္ဂလာပါ 🙏\nသင်သည် Bot ကိုစပြီးသုံးနိုင်ပါပြီ\n👤 name: ${name}\n📱 chat_id: ${chatId}`);
+                } else {
+                  await sendMessage(chatId, `မင်္ဂလာပါ 🙏\nသင် Bot သုံးခွင့်မရှိပါ\n👤 name: ${name}\n📱 chat_id: ${chatId}`);
+                }
+              }
+
+              // Enhanced greeting responses
+              const greetings = ["hi", "ဟိုင်", "hello", "ဟ", "ချစ်", "မင်္ဂလာပါ", "မဂ်လာပါ"];
+              if (greetings.includes(text.toLowerCase())) {
+                // Random response selection
+                const responses = [
+                  "မင်္ဂလာရှိ တဲ့ နေ့လေး ဖြစ်ပါစေ 🥰",
+                  "မင်္ဂလာ ပါ ချစ်ဆုံးဒို့ ရေး 🥰",
+                  "မင်္ဂလာ ရှိ သော အခုချိန် မှာ",
+                  "မဂ်လာပါ 🙏",
+                  "မင်္ဂလာပါ ခင်ဗျာ 🌸",
+                  "မင်္ဂလာပါ  🥰"
+                ];
+                const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+                await sendMessage(chatId, randomResponse);
+              }
+            }
+          }
+        } catch (e) {
+          console.error("Error polling updates:", e);
+          addLog(`Polling error: ${e.message}`);
+          await new Promise(r => setTimeout(r, 2000));
+        }
+      }
+    }
+
+    // Start polling if bot is enabled
+    if (botEnabled && !pollingActive) {
+      pollUpdates();
+    }
+  </script>
+</body>
+</html>
